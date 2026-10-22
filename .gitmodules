@@ -1,0 +1,3 @@
+[submodule "data/MagneticTile"]
+	path = data/MagneticTile
+	url = https://github.com/abin24/Magnetic-tile-defect-datasets..git
