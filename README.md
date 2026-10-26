@@ -77,66 +77,78 @@ These boxes highlight suspicious grid regions; they do not represent precise pix
 
 
 
+## 📊 Experimental Results
 
+VisionScout combines Gaussian-based anomaly detection with a Q-learning inspection agent to prioritize suspicious regions of magnetic tile images.
 
+### Test Dataset
 
+| Dataset property | Value |
+|---|---:|
+| Total test images | 266 |
+| Good images | 190 |
+| Defective images | 76 |
+| Regions per image | 49 (7 × 7 grid) |
 
+### Image-Level Classification Performance
 
+| Metric | Result |
+|---|---:|
+| Accuracy | **96.24%** |
+| Defect precision | **100.00%** |
+| Defect recall | **86.84%** |
+| Specificity | **100.00%** |
+| False-reject rate on good tiles | **0.00%** |
+| Missed-defect rate | **13.16%** |
 
+### Confusion Matrix
 
+| Actual / Predicted | Good | Defective |
+|---|---:|---:|
+| Good | 190 | 0 |
+| Defective | 10 | 66 |
 
+The agent correctly classified 190 good tiles and detected 66 of 76 defective tiles. Ten defective tiles were missed.
 
+### Inspection Efficiency
 
+| Metric | Result |
+|---|---:|
+| Mean regions inspected per tile | 4.36 |
+| Median regions inspected per tile | 1 |
+| Total regions in a full inspection | 49 |
+| Estimated reduction in inspections | **91.11%** |
 
+The estimated reduction compares the average number of regions inspected by the agent with inspecting all 49 regions in every tile.
 
+### Reinforcement Learning Configuration
 
+| Parameter | Value |
+|---|---|
+| Algorithm | Tabular Q-learning |
+| Training episodes | 20,000 |
+| Learning rate (α) | 0.10 |
+| Discount factor (γ) | 0.95 |
+| Initial exploration rate (ε) | 1.00 |
+| Recorded final exploration rate | Approximately 0.067 |
+| Maximum inspections per tile | 20 |
+| State space | 135 possible states |
+| Action space | 5 actions |
 
+### Interpretation
 
+- **High precision:** In the recorded evaluation, every tile predicted defective was actually defective.
+- **High good-tile acceptance:** No good tiles were falsely rejected in this evaluation.
+- **Defect detection:** The agent detected 86.84% of defective test tiles.
+- **Inspection efficiency:** The recorded policy inspected an average of approximately 4.36 regions per tile instead of all 49.
 
+### Limitations
 
+The current evaluation missed 10 of the 76 defective test tiles. A zero false-reject rate on this test set does not guarantee zero false rejects on future data.
 
+The reported results should be interpreted in the context of the current dataset split and evaluation procedure. The test set should remain independent of detector fitting, threshold selection, and hyperparameter tuning for a reliable final performance estimate.
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+The inspection-reduction figure measures the number of regions inspected, not elapsed time or computational cost.
 
 
 ## How to Use It
