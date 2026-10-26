@@ -1,19 +1,3 @@
-"""
-VisionScout - Step 4: Suspiciousness score for every region.
-
-Compares three anomaly-scoring methods, all fitted ONLY on defect-free tiles:
-  1. mean   - Euclidean distance to the average normal region vector (simple baseline)
-  2. gauss  - Mahalanobis distance to a Gaussian fitted per grid position (PaDiM-style)
-  3. knn    - distance to the k nearest normal region vectors (PatchCore-style)
-
-The best method is chosen by region-level AUROC on a validation set built from
-the TRAIN split only (the test split is never used for choices), then scores are
-bucketed into 3 levels (0 = low, 1 = medium, 2 = high) for the Q-learning state.
-
-Input:  features.pt  (from Step 3)
-Output: scores.pt, score_histogram.png
-Run:    python compute_scores.py
-"""
 import torch
 
 FEATURES = "features.pt"
@@ -22,10 +6,10 @@ SEED = 42
 CALIB_FRAC = 0.2          # 20% of normal train tiles held out for validation + thresholds
 KNN_K = 3
 SHRINK = 0.01             # covariance regularisation for the Gaussian method
-LEVEL_PCTS = (0.90, 0.99) # thresholds = 90th and 99th percentile of normal-region scores
+LEVEL_PCTS = (0.90, 0.99)
 
 
-# ----------------------------------------------------------------- helpers
+
 def auroc(scores, labels):
     """Area under ROC curve via the rank formula (no sklearn needed)."""
     scores, labels = scores.flatten().double(), labels.flatten().bool()
@@ -61,7 +45,6 @@ class PositionGaussian:
         cov += SHRINK * cov.diagonal(dim1=1, dim2=2).mean(1)[:, None, None] * torch.eye(D, dtype=torch.double)
         self.L = torch.linalg.cholesky(cov)            # [49, D, D]
         return self
-
     def score(self, feats):
         xc = (feats.double() - self.mu).permute(1, 2, 0)                # [49, D, N]
         z = torch.linalg.solve_triangular(self.L, xc, upper=False)      # whitened
@@ -117,7 +100,7 @@ if __name__ == "__main__":
     best = results[best_name][0]
     print(f"\nBest method on validation: {best_name}")
 
-        # ---- Score everything with the best method, using cross-fitting ----
+    # ---- Score everything with the best method, using cross-fitting ----
     MethodClass = type(best)
     all_normal = (tr["image_labels"] == 0).nonzero().flatten()
 
