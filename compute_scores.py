@@ -117,13 +117,33 @@ if __name__ == "__main__":
     best = results[best_name][0]
     print(f"\nBest method on validation: {best_name}")
 
-    # Score everything with the best method
-    tr_scores, te_scores = best.score(tr_feats), best.score(te_feats)
+        # ---- Score everything with the best method, using cross-fitting ----
+    MethodClass = type(best)
+    all_normal = (tr["image_labels"] == 0).nonzero().flatten()
 
-    # Level thresholds from UNSEEN normal regions (calib set)
-    calib_scores = tr_scores[calib_idx].flatten()
+    # Test tiles + defective train tiles: model fitted on ALL normal train tiles
+    final = MethodClass().fit(tr_feats[all_normal])
+    te_scores = final.score(te_feats)
+    tr_scores = final.score(tr_feats)        # normal-tile rows get replaced below
+
+    # Normal train tiles: 5-fold cross-fitting, so no tile is scored by a model that saw it
+    K_FOLDS = 5
+    perm = all_normal[torch.randperm(len(all_normal), generator=g)]
+    folds = perm.chunk(K_FOLDS)
+    for k, held in enumerate(folds):
+        others = torch.cat([f for j, f in enumerate(folds) if j != k])
+        tr_scores[held] = MethodClass().fit(tr_feats[others]).score(tr_feats[held])
+        print(f"  cross-fit fold {k + 1}/{K_FOLDS} done")
+
+    # Sanity check: honest train-normal scores should now look like test-normal scores
+    te_normal = te_scores[te["image_labels"] == 0]
+    print(f"Mean normal-tile score: train (cross-fit) = {tr_scores[all_normal].mean():.2f}, "
+          f"test = {te_normal.mean():.2f}")
+
+    # Level thresholds from honest (out-of-fold) normal-region scores
+    calib_scores = tr_scores[all_normal].flatten()
     thresholds = torch.quantile(calib_scores, torch.tensor(LEVEL_PCTS))
-    to_levels = lambda s: torch.bucketize(s, thresholds)       # 0 / 1 / 2
+    to_levels = lambda s: torch.bucketize(s.contiguous(), thresholds)   # 0 / 1 / 2
 
     print(f"Level thresholds: {[round(float(t), 3) for t in thresholds]}")
     print(f"TEST region AUROC = {auroc(te_scores, te['region_labels']):.3f}, "
