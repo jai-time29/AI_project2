@@ -1,0 +1,162 @@
+{
+  "project": "VisionScout",
+  "artifacts_found": {
+    "scores.pt": true,
+    "step6_test_metrics.json": true,
+    "step6_training_log.csv": true,
+    "step6_q_table.pt": true,
+    "step5_data.pt": true
+  },
+  "dataset": {
+    "train": {
+      "images": 1074,
+      "good_images": 762,
+      "defective_images": 312
+    },
+    "test": {
+      "images": 266,
+      "good_images": 190,
+      "defective_images": 76
+    }
+  },
+  "detector": {
+    "method": "gauss",
+    "grid_size": 7,
+    "thresholds": [
+      44.71189498901367,
+      72.32334899902344
+    ],
+    "validation_auroc": {
+      "mean": 0.7278461575077055,
+      "gauss": 0.7945497330397424,
+      "knn": 0.7879387711934883
+    }
+  },
+  "rl_agent": {
+    "state_shape": [
+      3,
+      3,
+      3,
+      5
+    ],
+    "action_names": {
+      "0": "inspect_high",
+      "1": "inspect_medium",
+      "2": "inspect_low",
+      "3": "stop_accept",
+      "4": "stop_reject"
+    },
+    "hyperparameters": {
+      "algorithm": "tabular Q-learning",
+      "episodes": 20000,
+      "alpha": 0.1,
+      "gamma": 0.95,
+      "epsilon_start": 1.0,
+      "epsilon_min": 0.05,
+      "epsilon_decay_schedule": "epsilon_min + (epsilon_start - epsilon_min) * exp(-episode / (episodes/4))",
+      "seed": 42,
+      "balanced_image_sampling": "approximately 50% good / 50% defective per training episode",
+      "max_inspections": 20
+    },
+    "evaluation_protocol": "greedy policy; every test image exactly once; natural test prevalence",
+    "q_values_shape": [
+      3,
+      3,
+      3,
+      5,
+      5
+    ],
+    "visit_counts_shape": [
+      3,
+      3,
+      3,
+      5,
+      5
+    ],
+    "training_log_rows": 21,
+    "last_training_log_row": {
+      "episode": "20000",
+      "epsilon": "0.06740333726370668",
+      "mean_reward_last_window": "0.5325",
+      "mean_inspections_last_window": "6.335",
+      "accuracy_last_window_balanced_train": "0.86",
+      "episodes_in_window": "200"
+    }
+  },
+  "evaluation": {
+    "saved_metrics": {
+      "test_images": 266,
+      "defective_images": 76,
+      "good_images": 190,
+      "defect_prevalence": 0.2857142857142857,
+      "image_accuracy": 0.9624060150375939,
+      "defect_precision": 1.0,
+      "defect_recall": 0.868421052631579,
+      "specificity_good_tile_acceptance": 1.0,
+      "false_reject_rate_on_good_tiles": 0.0,
+      "missed_defect_rate_on_defective_tiles": 0.13157894736842105,
+      "inspection_detection_recall": 0.8552631578947368,
+      "true_positive": 66,
+      "false_negative": 10,
+      "true_negative": 190,
+      "false_positive": 0,
+      "tiles_with_defect_found_by_inspection": 65,
+      "tiles_explicitly_rejected_without_finding_defect": 1,
+      "tiles_accepted": 200,
+      "mean_inspections_per_tile": 4.357142857142857,
+      "median_inspections_per_tile": 1.0,
+      "max_inspections_used": 20,
+      "fraction_of_49_regions_inspected": 0.08892128279883382,
+      "estimated_inspection_reduction_vs_49_regions": 0.9110787172011662,
+      "mean_total_reward_per_tile": 2.595864661654135,
+      "terminal_reasons": {
+        "defect_found": 65,
+        "stopped_accept": 185,
+        "budget_exhausted_accept": 15,
+        "stopped_reject": 1
+      },
+      "evaluation_protocol": "greedy policy; every test image exactly once; natural test prevalence",
+      "training": {
+        "algorithm": "tabular Q-learning",
+        "episodes": 20000,
+        "alpha": 0.1,
+        "gamma": 0.95,
+        "epsilon_start": 1.0,
+        "epsilon_min": 0.05,
+        "epsilon_decay_schedule": "epsilon_min + (epsilon_start - epsilon_min) * exp(-episode / (episodes/4))",
+        "seed": 42,
+        "balanced_image_sampling": "approximately 50% good / 50% defective per training episode",
+        "max_inspections": 20
+      },
+      "q_table": {
+        "state_shape": [
+          3,
+          3,
+          3,
+          5
+        ],
+        "action_count": 5,
+        "visited_state_action_pairs": 177,
+        "total_q_updates": 95367,
+        "nonzero_states": 43
+      }
+    },
+    "image_accuracy": 0.9624060150375939,
+    "defect_precision": 1.0,
+    "defect_recall": 0.868421052631579,
+    "inspection_detection_recall": 0.8552631578947368,
+    "mean_inspections_per_tile": 4.357142857142857,
+    "median_inspections_per_tile": 1.0,
+    "terminal_reasons": {
+      "defect_found": 65,
+      "stopped_accept": 185,
+      "budget_exhausted_accept": 15,
+      "stopped_reject": 1
+    }
+  },
+  "notes": [
+    "The test split contains 266 images (190 good, 76 defective) in the current recorded run; counts above are recalculated from scores.pt when available.",
+    "Reported test metrics describe the saved run. They do not by themselves prove that the test set was untouched during detector fitting, threshold selection, or hyperparameter tuning.",
+    "Do not interpret grid boxes as pixel-accurate segmentation. They indicate suspicious 7x7 regions."
+  ]
+}
