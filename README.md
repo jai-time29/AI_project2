@@ -150,6 +150,30 @@ The reported results should be interpreted in the context of the current dataset
 
 The inspection-reduction figure measures the number of regions inspected, not elapsed time or computational cost.
 
+### Detailed Results and Reproducibility
+
+For the complete experimental results, saved evaluation metrics, training information, and configuration details, see **[RESULTS.md](RESULTS.md)**.
+
+The machine-readable summary is available in [`results_summary.json`](results_summary.json).
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 ## How to Use It
 
