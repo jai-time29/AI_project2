@@ -117,7 +117,7 @@ if __name__ == "__main__":
     best = results[best_name][0]
     print(f"\nBest method on validation: {best_name}")
 
-        # ---- Score everything with the best method, using cross-fitting ----
+    # ---- Score everything with the best method, using cross-fitting ----
     MethodClass = type(best)
     all_normal = (tr["image_labels"] == 0).nonzero().flatten()
 
