@@ -1,262 +1,256 @@
-# AI_project2
-VisionScout — RL-Powered Smart Inspection : System that uses computer vision to detect product defects efficiently. An agent learns an optimal inspection policy using Q-learning, selecting suspicious image regions based on rewards and inspection costs.
+<div align="center">
 
+# VisionScout — RL-Powered Smart Inspection
 
+**Regional defect detection and inspection-policy learning for magnetic tile images**
 
+![Python](https://img.shields.io/badge/Python-3.10%2B-3776AB?logo=python&logoColor=white)
+![PyTorch](https://img.shields.io/badge/PyTorch-ResNet--18-EE4C2C?logo=pytorch&logoColor=white)
+![Computer Vision](https://img.shields.io/badge/Computer%20Vision-Anomaly%20Detection-2E7D32)
+![Reinforcement Learning](https://img.shields.io/badge/Reinforcement%20Learning-Q--Learning-6A5ACD)
 
+</div>
 
-## Model Evaluation
+VisionScout is a computer-vision inspection system for magnetic tile images. It extracts spatial features with a pretrained ResNet-18, uses Gaussian-based anomaly scoring to rank suspicious regions, and applies a tabular Q-learning agent to choose which regions to inspect and when to accept or reject a tile. The goal is to detect defects while reducing inspection effort.
 
-### AUROC Comparison
+## Table of Contents
+
+- [Architecture](#architecture)
+- [Project Structure](#project-structure)
+- [Quickstart](#quickstart)
+- [Dataset and Feature Extraction](#dataset-and-feature-extraction)
+- [Anomaly Scoring and Visualization](#anomaly-scoring-and-visualization)
+- [Experimental Results](#experimental-results)
+- [Q-Learning Configuration](#q-learning-configuration)
+- [Reproducibility and Limitations](#reproducibility-and-limitations)
+
+## Architecture
+
+```text
+Magnetic Tile Images
+        |
+        v
+Dataset and mask preparation
+        |
+        v
+Pretrained ResNet-18 feature extraction
+        |
+        v
+7 x 7 spatial feature map (49 regions)
+        |
+        v
+Gaussian-based regional anomaly scores
+        |
+        v
+Inspection environment
+        |
+        v
+Tabular Q-learning policy
+        |
+        v
+Tile decision + inspection-effort metrics
+```
+
+The workflow separates visual feature extraction, anomaly scoring, and sequential inspection. The detector ranks regions by anomaly score; the RL agent uses suspicion levels and inspection costs to decide which region to inspect next or when to stop.
+
+## Project Structure
+
+```text
+AI_project2/
+├── data/                       # Dataset files
+├── figures/                    # Evaluation plots and defect visualizations
+├── precompute_features.py      # ResNet-18 feature extraction
+├── load_resnet.py              # ResNet model/loading utilities
+├── compute_scores.py           # Gaussian-based anomaly scoring
+├── step5_environment.py        # Inspection environment
+├── RL_q_learning.py            # Q-learning training and evaluation
+├── Defect_visual.py             # Defect visualization
+├── visualizations.py           # Result visualization utilities
+├── generate_results.py         # Generates RESULTS.md from saved artifacts
+├── check_features.py           # Feature-artifact checks
+├── requirements.txt            # Python dependencies
+├── scores.pt                   # Saved anomaly scores
+├── step5_data.pt               # Inspection environment data
+├── step6_q_table.pt             # Learned Q-table
+├── step6_test_metrics.json      # Saved test metrics
+├── step6_training_log.csv      # Training log
+├── results_summary.json        # Machine-readable result summary
+├── RESULTS.md                  # Detailed experiment report
+└── README.md
+```
+
+## Quickstart
+
+### 1. Clone and install
+
+```bash
+git clone https://github.com/jai-time29/AI_project2.git
+cd AI_project2
+
+python -m venv .venv
+```
+
+Activate the environment:
+
+**Windows PowerShell**
+```powershell
+.venv\Scripts\Activate.ps1
+```
+
+**Linux / macOS**
+```bash
+source .venv/bin/activate
+```
+
+Install dependencies:
+
+```bash
+python -m pip install --upgrade pip
+pip install -r requirements.txt
+```
+
+### 2. Prepare the dataset
+
+Place the Magnetic Tile Defect Dataset where the data-loading and feature-extraction scripts expect it. The dataset itself is obtained separately; the image/mask paths and naming conventions must match the configuration in the scripts.
+
+### 3. Run the pipeline
+
+Run the stages in order:
+
+```bash
+python precompute_features.py
+python compute_scores.py
+python step5_environment.py
+python RL_q_learning.py
+```
+
+The pipeline generates spatial features, regional anomaly scores, the inspection environment data, and the learned Q-table and evaluation artifacts. To refresh the written experiment report from the saved artifacts, run:
+
+```bash
+python generate_results.py
+```
+
+## Dataset and Feature Extraction
+
+VisionScout uses the **Magnetic Tile Defect Dataset**. The recorded dataset preparation summary is:
+
+| Dataset item | Count |
+|---|---:|
+| Images initially collected | 1,344 |
+| Good images | 952 |
+| Defective images | 392 |
+| Images excluded because of empty masks | 4 |
+| Images remaining after exclusion | 1,340 |
+
+A pretrained ResNet-18 extracts a `7 × 7 × 512` spatial feature map from each image. This is represented as **49 regions with 512 features per region**. The precomputed regional feature tensor has shape `[N, 49, 512]`, with associated regional labels, image labels, defect types, and image paths.
+
+The recorded evaluation uses 266 test images: 190 good and 76 defective. The training and test partitions should remain separate during detector fitting, threshold selection, and RL training.
+
+## Anomaly Scoring and Visualization
+
+`compute_scores.py` applies Gaussian-based anomaly scoring to regional features. The image is divided into a 7 × 7 grid; each region receives an anomaly score and can be categorized into low, medium, or high suspicion. The RL environment uses these rankings to prioritize inspection.
+
+### AUROC comparison
+
 ![AUROC Comparison](figures/01_auroc_comparison.png)
 
-### Confusion Matrix
-![Confusion Matrix](figures/02_confusion_matrix.png)
+The validation comparison includes mean-distance, Gaussian/Mahalanobis, and k-nearest-neighbor scoring. From the plotted results, Gaussian/Mahalanobis gives approximately **0.80 region AUROC** and **0.88 image AUROC**; kNN gives approximately **0.79 region AUROC** and **0.85 image AUROC**. The mean-distance baseline is approximately **0.73 region AUROC** and **0.69 image AUROC**. The dashed line indicates random-ranking AUROC (0.50).
 
-### Defect Rate by Suspicion Level
-![Suspicion Analysis](figures/03_defect_rate_by_suspicion.png)
+### Defect rate by suspicion level
 
-### Inspection Efficiency
-![Inspection Efficiency](figures/04_inspection_efficiency.png)
+![Defect Rate by Suspicion Level](figures/03_defect_rate_by_suspicion.png)
 
-### Q-learning Training Reward
-![Training Reward](figures/06_training_reward.png)
+| Suspicion level | Defect rate | Regions |
+|---|---:|---:|
+| Low | 1.8% | 10,953 |
+| Medium | 9.8% | 1,483 |
+| High | 34.3% | 598 |
 
+Higher-suspicion regions have a higher observed defect rate, supporting their use as inspection priorities. These percentages are regional defect rates, not image-level precision or recall.
 
+### Defect localization examples
 
+The visualizations compare original images, anomaly heatmaps/score overlays, suspicious grid regions, and ground-truth defect outlines when available.
 
+![Good vs Defective Tiles](figures/comparison_grid.png)
 
-## 🔍 Defect Visualization & Anomaly Localization
+**Individual defect examples**
 
-VisionScout divides each magnetic tile image into a **7 × 7 grid** and calculates an anomaly score for each region. The visualizations below show how the system identifies potentially defective areas.
+| Defect type | Visualization |
+|---|---|
+| Blowhole | ![Blowhole detection](figures/defect_MT_Blowhole_exp2_num_308043.png) |
+| Crack | ![Crack detection](figures/defect_MT_Crack_exp1_num_339819.png) |
+| Break | ![Break detection](figures/defect_MT_Break_exp5_num_105879.png) |
+| Uneven surface | ![Uneven surface detection](figures/defect_MT_Uneven_exp2_num_274120.png) |
 
-### Good vs Defective Tiles
+Orange boxes indicate medium-suspicion regions, red boxes indicate high-suspicion regions, and cyan outlines show ground-truth defects when available. The grid boxes identify suspicious regions; they are not pixel-accurate segmentation masks.
 
-This comparison presents original images, anomaly-score overlays, and suspicious regions alongside ground-truth defect outlines.
+## Experimental Results
 
-![VisionScout comparison grid](figures/comparison_grid.png)
+The current saved Q-learning evaluation contains **266 test images** (190 good and 76 defective), with 49 candidate regions per image.
 
-### Individual Defect Examples
-
-**1. Blowhole Detection**
-
-![Blowhole anomaly visualization](figures/defect_MT_Blowhole_exp2_num_308043.png)
-
-**2. Crack Detection**
-
-![Crack anomaly visualization](figures/defect_MT_Crack_exp1_num_339819.png)
-
-**3. Break Detection**
-
-![Break anomaly visualization](figures/defect_MT_Break_exp5_num_105879.png)
-
-**4. Uneven Surface Detection**
-
-![Uneven surface anomaly visualization](figures/defect_MT_Uneven_exp2_num_274120.png)
-
-### Understanding the Visualizations
-
-Each individual visualization contains four panels:
-
-- **Original:** The input magnetic tile image.
-- **Anomaly Heatmap:** Regional anomaly scores on the 7 × 7 grid.
-- **Score Overlay:** Anomaly scores overlaid on the original image.
-- **Suspicious Regions:** Orange boxes indicate medium-suspicion regions, red boxes indicate high-suspicion regions, and cyan outlines represent ground-truth defects when available.
-
-These boxes highlight suspicious grid regions; they do not represent precise pixel-level defect segmentation.
-
-### Why These Visualizations Matter
-
-- **Interpretability:** Makes regional anomaly scores easier to understand.
-- **Defect localization:** Highlights areas that may require closer inspection.
-- **Ground-truth comparison:** Helps evaluate whether suspicious regions overlap actual defects.
-- **Inspection efficiency:** Supports prioritizing suspicious regions instead of inspecting all regions equally.
-
-
-
-
-
-
-## 📊 Experimental Results
-
-VisionScout combines Gaussian-based anomaly detection with a Q-learning inspection agent to prioritize suspicious regions of magnetic tile images.
-
-### Test Dataset
-
-| Dataset property | Value |
-|---|---:|
-| Total test images | 266 |
-| Good images | 190 |
-| Defective images | 76 |
-| Regions per image | 49 (7 × 7 grid) |
-
-### Image-Level Classification Performance
+### Image-level classification
 
 | Metric | Result |
 |---|---:|
 | Accuracy | **96.24%** |
 | Defect precision | **100.00%** |
 | Defect recall | **86.84%** |
-| Specificity | **100.00%** |
+| Specificity / good-tile acceptance | **100.00%** |
 | False-reject rate on good tiles | **0.00%** |
 | Missed-defect rate | **13.16%** |
 
-### Confusion Matrix
+### Confusion matrix
+
+![Q-learning Confusion Matrix](figures/02_confusion_matrix.png)
 
 | Actual / Predicted | Good | Defective |
 |---|---:|---:|
 | Good | 190 | 0 |
 | Defective | 10 | 66 |
 
-The agent correctly classified 190 good tiles and detected 66 of 76 defective tiles. Ten defective tiles were missed.
+The policy correctly accepted all 190 good tiles and detected 66 of 76 defective tiles. It missed 10 defective tiles. These values correspond to the displayed confusion matrix.
 
-### Inspection Efficiency
+### Inspection efficiency
+
+![Inspection Efficiency](figures/04_inspection_efficiency.png)
 
 | Metric | Result |
 |---|---:|
-| Mean regions inspected per tile | 4.36 |
-| Median regions inspected per tile | 1 |
-| Total regions in a full inspection | 49 |
-| Estimated reduction in inspections | **91.11%** |
+| Mean regions inspected per tile | **4.36** |
+| Median regions inspected per tile | **1** |
+| Regions in exhaustive inspection | 49 |
+| Estimated reduction in regions inspected | **91.11%** |
 
-The estimated reduction compares the average number of regions inspected by the agent with inspecting all 49 regions in every tile.
+The reduction compares the mean number of regions inspected by the policy with inspecting all 49 regions per tile. It measures inspection count, not elapsed time or total computational cost.
 
-### Reinforcement Learning Configuration
+### Training reward
+
+![Q-learning Training Reward](figures/06_training_reward.png)
+
+The training plot shows recorded and smoothed mean reward over 20,000 episodes. Reward improves from a strongly negative initial value and trends toward zero/positive values during training; this reflects the configured reward scheme and should be interpreted alongside held-out detection and inspection-effort metrics.
+
+## Q-Learning Configuration
 
 | Parameter | Value |
 |---|---|
 | Algorithm | Tabular Q-learning |
 | Training episodes | 20,000 |
-| Learning rate (α) | 0.10 |
-| Discount factor (γ) | 0.95 |
-| Initial exploration rate (ε) | 1.00 |
+| Learning rate (\(\alpha\)) | 0.10 |
+| Discount factor (\(\gamma\)) | 0.95 |
+| Initial exploration rate (\(\epsilon\)) | 1.00 |
 | Recorded final exploration rate | Approximately 0.067 |
 | Maximum inspections per tile | 20 |
 | State space | 135 possible states |
 | Action space | 5 actions |
 
-### Interpretation
+The five actions are to inspect a high-, medium-, or low-suspicion region, accept the tile, or reject the tile. The policy trades off inspection cost against the reward/penalty associated with defect discovery and final decisions.
 
-- **High precision:** In the recorded evaluation, every tile predicted defective was actually defective.
-- **High good-tile acceptance:** No good tiles were falsely rejected in this evaluation.
-- **Defect detection:** The agent detected 86.84% of defective test tiles.
-- **Inspection efficiency:** The recorded policy inspected an average of approximately 4.36 regions per tile instead of all 49.
+## Reproducibility and Limitations
 
-### Limitations
-
-The current evaluation missed 10 of the 76 defective test tiles. A zero false-reject rate on this test set does not guarantee zero false rejects on future data.
-
-The reported results should be interpreted in the context of the current dataset split and evaluation procedure. The test set should remain independent of detector fitting, threshold selection, and hyperparameter tuning for a reliable final performance estimate.
-
-The inspection-reduction figure measures the number of regions inspected, not elapsed time or computational cost.
-
-### Detailed Results and Reproducibility
-
-For the complete experimental results, saved evaluation metrics, training information, and configuration details, see **[RESULTS.md](RESULTS.md)**.
-
-The machine-readable summary is available in [`results_summary.json`](results_summary.json).
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-## How to Use It
-
-VisionScout combines visual anomaly detection with a Reinforcement Learning (RL) agent to make inspection decisions efficiently. The system assigns anomaly scores to image regions, categorizes their suspicion levels, and uses a trained agent to decide which regions to inspect and whether to accept or reject a tile.
-
-### 1. Clone the Repository
-
-```bash
-git clone https://github.com/jai-time29/AI_project2.git
-cd AI_project2
-```
-
-### 2. Set Up the Environment
-
-Create and activate a virtual environment.
-
-**Windows:**
-```bash
-python -m venv venv
-venv\Scripts\activate
-```
-
-**Linux/macOS:**
-```bash
-python3 -m venv venv
-source venv/bin/activate
-```
-
-Install the dependencies:
-
-```bash
-python -m pip install -r requirements.txt
-```
-
-### 3. Prepare the Dataset
-
-Place the dataset in the directory structure expected by the data-loading and feature-extraction scripts. Ensure the dataset paths and configuration match those specified in the project scripts.
-
-The dataset should contain the image tiles and the corresponding labels needed for training and evaluation.
-
-> **Note:** The exact dataset directory structure depends on the configuration used by the data-loading scripts.
-
-### 4. Generate Anomaly Scores
-
-Run the anomaly-scoring script:
-
-```bash
-python compute_scores.py
-```
-
-This step calculates anomaly scores for image regions using a Gaussian-based anomaly detection method and saves the outputs required by the inspection environment.
-
-The generated `scores.pt` file contains the anomaly-scoring results and related calibration information used by subsequent steps.
-
-### 5. Create the Inspection Environment
-
-Run:
-
-```bash
-python step5_environment.py
-```
-
-This step prepares the reinforcement-learning inspection environment using the anomaly scores. The environment defines the available actions, inspection costs, rewards, and stopping decisions.
-
-The agent can:
-- Inspect high-suspicion regions.
-- Inspect medium-suspicion regions.
-- Inspect low-suspicion regions.
-- Accept a tile.
-- Reject a tile.
-
-### 6. Train the Q-Learning Agent
-
-Run:
-
-```bash
-python RL_q_learning.py
-```
-
-The Q-learning agent learns an inspection policy by interacting with the environment. It learns which regions to inspect and when to accept or reject a tile based on the reward structure.
-
-The training process produces the learned Q-table and evaluation outputs, including:
-
-- `step6_q_table.pt` — the trained Q-learning policy.
-- `step6_test_metrics.json` — evaluation metrics on the test split.
-- `step6_training_log.csv`
+- `RESULTS.md` contains the detailed report generated from saved artifacts. `results_summary.json`, `step6_test_metrics.json`, and `step6_training_log.csv` preserve machine-readable metrics and training information.
+- Rebuild the report after regenerating artifacts with `python generate_results.py`.
+- The recorded test metrics describe the current saved run. They do not, by themselves, establish that the test set was untouched during detector fitting, threshold selection, or hyperparameter tuning.
+- Ten defective test tiles were missed in the displayed evaluation. Strong performance on this test set does not guarantee identical performance on future data.
+- Suspicious-region boxes indicate 7 × 7 grid regions, not pixel-level segmentation.
+- The reported inspection reduction is based on the number of regions inspected, not elapsed time or computational cost.
