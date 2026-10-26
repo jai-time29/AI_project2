@@ -183,3 +183,4 @@ if __name__ == "__main__":
         print("Saved score_histogram.png")
     except ImportError:
         print("(matplotlib not installed - run 'pip install matplotlib' for the histogram)")
+
