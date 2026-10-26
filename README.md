@@ -26,8 +26,51 @@ VisionScout — RL-Powered Smart Inspection : System that uses computer vision t
 
 
 
+## 🔍 Defect Visualization & Anomaly Localization
 
+VisionScout divides each magnetic tile image into a **7 × 7 grid** and calculates an anomaly score for each region. The visualizations below show how the system identifies potentially defective areas.
 
+### Good vs Defective Tiles
+
+This comparison presents original images, anomaly-score overlays, and suspicious regions alongside ground-truth defect outlines.
+
+![VisionScout comparison grid](figures/comparison_grid.png)
+
+### Individual Defect Examples
+
+**1. Blowhole Detection**
+
+![Blowhole anomaly visualization](figures/defect_MT_Blowhole_exp2_num_308043.png)
+
+**2. Crack Detection**
+
+![Crack anomaly visualization](figures/defect_MT_Crack_exp1_num_339819.png)
+
+**3. Break Detection**
+
+![Break anomaly visualization](figures/defect_MT_Break_exp5_num_105879.png)
+
+**4. Uneven Surface Detection**
+
+![Uneven surface anomaly visualization](figures/defect_MT_Uneven_exp2_num_274120.png)
+
+### Understanding the Visualizations
+
+Each individual visualization contains four panels:
+
+- **Original:** The input magnetic tile image.
+- **Anomaly Heatmap:** Regional anomaly scores on the 7 × 7 grid.
+- **Score Overlay:** Anomaly scores overlaid on the original image.
+- **Suspicious Regions:** Orange boxes indicate medium-suspicion regions, red boxes indicate high-suspicion regions, and cyan outlines represent ground-truth defects when available.
+
+These boxes highlight suspicious grid regions; they do not represent precise pixel-level defect segmentation.
+
+### Why These Visualizations Matter
+
+- **Interpretability:** Makes regional anomaly scores easier to understand.
+- **Defect localization:** Highlights areas that may require closer inspection.
+- **Ground-truth comparison:** Helps evaluate whether suspicious regions overlap actual defects.
+- **Inspection efficiency:** Supports prioritizing suspicious regions instead of inspecting all regions equally.
 
 
 
