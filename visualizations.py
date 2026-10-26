@@ -6,6 +6,17 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 
+# Scale plot typography to 75% of Matplotlib's usual defaults for README-friendly figures.
+plt.rcParams.update({
+    "font.size": 7.5,
+    "axes.titlesize": 9.0,
+    "axes.labelsize": 7.5,
+    "xtick.labelsize": 6.75,
+    "ytick.labelsize": 6.75,
+    "legend.fontsize": 7.5,
+    "figure.titlesize": 9.0,
+})
+
 ROOT = Path(__file__).resolve().parent
 OUT = ROOT / "figures"
 OUT.mkdir(exist_ok=True)
@@ -97,7 +108,7 @@ def confusion_plot():
     plt.title("Step 6: Q-learning Confusion Matrix")
     for i in range(2):
         for j in range(2):
-            plt.text(j, i, str(CM[i, j]), ha="center", va="center", fontsize=15)
+            plt.text(j, i, str(CM[i, j]), ha="center", va="center", fontsize=11.25)
     save("02_confusion_matrix.png")
 
 
