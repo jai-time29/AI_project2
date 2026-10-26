@@ -5,7 +5,22 @@ VisionScout — RL-Powered Smart Inspection : System that uses computer vision t
 
 
 
+## Model Evaluation
 
+### AUROC Comparison
+![AUROC Comparison](figures/01_auroc_comparison.png)
+
+### Confusion Matrix
+![Confusion Matrix](figures/02_confusion_matrix.png)
+
+### Defect Rate by Suspicion Level
+![Suspicion Analysis](figures/03_defect_rate_by_suspicion.png)
+
+### Inspection Efficiency
+![Inspection Efficiency](figures/04_inspection_efficiency.png)
+
+### Q-learning Training Reward
+![Training Reward](figures/06_training_reward.png)
 
 
 
