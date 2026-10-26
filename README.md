@@ -2,6 +2,32 @@
 
 # VisionScout — RL-Powered Smart Inspection
 
+
+
+
+
+### Core Configuration
+
+| Component | Configuration |
+|---|---|
+| Feature extractor | Pretrained, frozen ResNet-18 |
+| Input image size | 224 × 224 |
+| Spatial regions | 7 × 7 = 49 |
+| Feature dimension | 512 per region |
+| Dataset split | 80% training / 20% test within each category |
+| Anomaly methods compared | Mean distance, Gaussian/Mahalanobis, k-NN |
+| Selected scorer | Gaussian/Mahalanobis |
+| State space | 135 abstract states |
+| Action space | 5 discrete actions |
+| RL algorithm | Tabular Q-learning |
+| Training episodes | 20,000 |
+| Learning rate | 0.10 |
+| Discount factor | 0.95 |
+| Initial exploration rate | 1.00 |
+| Maximum inspections per tile | 20 |
+
+The Q-learning agent uses a balanced good/defective sampling strategy during training. Evaluation retains the natural test-set class distribution, with each held-out test image evaluated once.
+
 **Regional defect detection and inspection-policy learning for magnetic tile images**
 
 ![Python](https://img.shields.io/badge/Python-3.10%2B-3776AB?logo=python&logoColor=white)
