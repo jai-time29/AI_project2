@@ -1,0 +1,11 @@
+# VisionScout - project dependencies
+# Recommended: Python 3.11 or 3.12; use the Python version tested by your project.
+# Install with: python -m pip install -r requirements.txt
+
+numpy
+pandas
+matplotlib
+scikit-learn
+torch
+torchvision
+Pillow
